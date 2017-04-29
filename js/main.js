@@ -1,7 +1,6 @@
-var map;
+var map, infoWindow;
 // create a blank array for all the listing markers
 var markers = ko.observableArray([]);
-
 function initMap() {
         // below code is copied from google documentation with modification
         // Create a map object and specify the DOM element for display.
@@ -10,8 +9,8 @@ function initMap() {
           scrollwheel: false,
           zoom: 14
         });
-
-        var bounds = new google.maps.LatLngBounds();
+        // create an info window
+        infoWindow = new google.maps.InfoWindow();
 }
 
 // this object is used to store the data
@@ -28,14 +27,10 @@ var Model = {
 };
 
 //create a location constructor
-
 var Location = function(data){
   var self = this;
   this.title = data.title;
   this.location = data.location;
-  this.infoWindow = new google.maps.InfoWindow({
-    content: "<h2>" + data.title + "</h2>" + '<a class="twitter-share-button"  href="https://twitter.com/share" data-size="large"'+' data-text='+"'"+data.title+"'"+'>Tweet</a>'
-  });
 
   this.marker = new google.maps.Marker({
     map: map,
@@ -45,24 +40,46 @@ var Location = function(data){
 
   this.marker.addListener("click", function(){
     // request for twitter widget js
-    $.getScript("http://platform.twitter.com/widgets.js");
-    // close info window before opening new one
-    markers().forEach(function(item){
-      item.infoWindow.close();
+    $.getScript( "http://platform.twitter.com/widgets.js" )
+      .done(function( script, textStatus ) {
+        console.log( textStatus );
+      })
+      .fail(function( jqxhr, settings, exception ) {
+        alert("twitter widget component fail to load try a refresh might solve the problem.")
     });
+    $.ajax({
+      url: "https://api.foursquare.com/v2/venues/search?client_id=ROQSHZQGKVE0YOPNR0HPTFO312NOHEFWKTXDHHG5EZZKRI51%20&client_secret=PW5E4LMFWETNURO4H1TNDM2YMKZNSPNDV2IVCWXZ5Y3ANNRN%20&v=20130815&ll=" +
+      data.location.lat + ","+data.location.lng+"&query=hotels",
+      success: function(json){
+        var randomNum = Math.floor(Math.random()*30);
+        infoWindow.setContent("<h2>" + data.title + "</h2>" + '<a class="twitter-share-button"  href="https://twitter.com/share" data-size="large"'+
+        ' data-text='+"'"+data.title+"'"+'>Tweet</a>' + "<h6>Nearby Hotel: " +
+        json.response.venues[randomNum].name + "</h6>")
+      },
+      error: function(){
+        infoWindow.setContent("<h2>" + data.title + "</h2>" + '<a class="twitter-share-button"  href="https://twitter.com/share" data-size="large"'+
+        ' data-text='+"'"+data.title+"'"+'>Tweet</a>')
+        console.log("failed to load the nearby hotel, try refresh to solve this problem")
+      }
+    })
+
+
+
+    // set the info window content
+    infoWindow.setContent("<h2>" + data.title + "</h2>" + '<a class="twitter-share-button"  href="https://twitter.com/share" data-size="large"'+' data-text='+"'"+data.title+"'"+'>Tweet</a>')
     // start animation
     self.marker.setAnimation(google.maps.Animation.BOUNCE);
     // open info window
-    self.infoWindow.open(map, this);
+    infoWindow.open(map, this);
     // end animation
     setTimeout(function() {
-      self.marker.setAnimation(null)
+      self.marker.setAnimation(null);
     }, 1400);
   });
   // trigger click event on marker when list is clicked
   this.showInfoWindow = function(place){
     google.maps.event.trigger(self.marker, "click");
-  }
+  };
 };
 
 var ViewModel = function(){
@@ -81,7 +98,7 @@ var ViewModel = function(){
   this.searchResults = ko.computed(function(){
     var q = self.Query();
     // clear all the marker if there is text input
-    if(q != ""){
+    if(q !== ""){
       markers().forEach(function(item){
         item.marker.setMap(null);
       });
@@ -95,9 +112,8 @@ var ViewModel = function(){
   this.update = function(){
     self.searchResults().forEach(function(item){
       item.marker.setMap(map);
-    })
-  }
-
+    });
+  };
  };
 
 function startApp(){
