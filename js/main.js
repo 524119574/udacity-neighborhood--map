@@ -45,16 +45,16 @@ var Location = function(data){
       success: function(json){
         var randomNum = Math.floor(Math.random()*30);
         infoWindow.setContent("<h2>" + data.title + "</h2>" +  "<h6>Nearby Hotel: " +
-        json.response.venues[randomNum].name + "</h6>")
+        json.response.venues[randomNum].name + "</h6>");
       },
       error: function(){
-        infoWindow.setContent("<h2>" + data.title + "</h2>" + "<h6>Nearby Hotel: failed to load nearby hotel please refresh the page.</h6>")
-        console.log("failed to load the nearby hotel, try refresh to solve this problem.")
+        infoWindow.setContent("<h2>" + data.title + "</h2>" + "<h6>Nearby Hotel: failed to load nearby hotel please refresh the page.</h6>");
+        console.log("failed to load the nearby hotel, try refresh to solve this problem.");
       }
     });
 
     // set the info window content
-    infoWindow.setContent("<h2>" + data.title + "</h2>" + '<a class="twitter-share-button"  href="https://twitter.com/share" data-size="large"'+' data-text='+"'"+data.title+"'"+'>Tweet</a>')
+    infoWindow.setContent("<h2>" + data.title + "</h2>" + '<a class="twitter-share-button"  href="https://twitter.com/share" data-size="large"'+' data-text='+"'"+data.title+"'"+'>Tweet</a>');
     // start animation
     self.marker.setAnimation(google.maps.Animation.BOUNCE);
     // open info window
@@ -107,8 +107,8 @@ var ViewModel = function(){
 function startApp(){
   initMap();
   ko.applyBindings(new ViewModel());
-};
+}
 
 function mapError(){
-  alert("failed to load the map, please try a refresh.")
-};
+  alert("failed to load the map, please try a refresh.");
+}
