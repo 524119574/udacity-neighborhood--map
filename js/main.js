@@ -39,31 +39,19 @@ var Location = function(data){
   });
 
   this.marker.addListener("click", function(){
-    // request for twitter widget js
-    $.getScript( "http://platform.twitter.com/widgets.js" )
-      .done(function( script, textStatus ) {
-        console.log( textStatus );
-      })
-      .fail(function( jqxhr, settings, exception ) {
-        alert("twitter widget component fail to load try a refresh might solve the problem.")
-    });
     $.ajax({
       url: "https://api.foursquare.com/v2/venues/search?client_id=ROQSHZQGKVE0YOPNR0HPTFO312NOHEFWKTXDHHG5EZZKRI51%20&client_secret=PW5E4LMFWETNURO4H1TNDM2YMKZNSPNDV2IVCWXZ5Y3ANNRN%20&v=20130815&ll=" +
       data.location.lat + ","+data.location.lng+"&query=hotels",
       success: function(json){
         var randomNum = Math.floor(Math.random()*30);
-        infoWindow.setContent("<h2>" + data.title + "</h2>" + '<a class="twitter-share-button"  href="https://twitter.com/share" data-size="large"'+
-        ' data-text='+"'"+data.title+"'"+'>Tweet</a>' + "<h6>Nearby Hotel: " +
+        infoWindow.setContent("<h2>" + data.title + "</h2>" +  "<h6>Nearby Hotel: " +
         json.response.venues[randomNum].name + "</h6>")
       },
       error: function(){
-        infoWindow.setContent("<h2>" + data.title + "</h2>" + '<a class="twitter-share-button"  href="https://twitter.com/share" data-size="large"'+
-        ' data-text='+"'"+data.title+"'"+'>Tweet</a>')
-        console.log("failed to load the nearby hotel, try refresh to solve this problem")
+        infoWindow.setContent("<h2>" + data.title + "</h2>" + "<h6>Nearby Hotel: failed to load nearby hotel please refresh the page.</h6>")
+        console.log("failed to load the nearby hotel, try refresh to solve this problem.")
       }
-    })
-
-
+    });
 
     // set the info window content
     infoWindow.setContent("<h2>" + data.title + "</h2>" + '<a class="twitter-share-button"  href="https://twitter.com/share" data-size="large"'+' data-text='+"'"+data.title+"'"+'>Tweet</a>')
@@ -100,7 +88,7 @@ var ViewModel = function(){
     // clear all the marker if there is text input
     if(q !== ""){
       markers().forEach(function(item){
-        item.marker.setMap(null);
+        item.marker.setVisible(false);
       });
     }
     // reuturn the marker which match the filter input
@@ -111,7 +99,7 @@ var ViewModel = function(){
 
   this.update = function(){
     self.searchResults().forEach(function(item){
-      item.marker.setMap(map);
+      item.marker.setVisible(true);
     });
   };
  };
@@ -119,4 +107,8 @@ var ViewModel = function(){
 function startApp(){
   initMap();
   ko.applyBindings(new ViewModel());
-}
+};
+
+function mapError(){
+  alert("failed to load the map, please try a refresh.")
+};
